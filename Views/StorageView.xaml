@@ -1,6 +1,8 @@
 <UserControl x:Class="WinOptimizer.Views.StorageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:WinOptimizer.Models"
+             Unloaded="StorageView_Unloaded"
              Background="#111827">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -8,6 +10,8 @@
         <Grid Margin="30">
 
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="20"/>
                 <RowDefinition Height="Auto"/>
@@ -95,6 +99,74 @@
 
             <StackPanel x:Name="StorageResultsPanel"
                         Grid.Row="6"/>
+
+            <Border Grid.Row="8" Background="#1F2937" CornerRadius="12" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="Disk Usage Explorer" Foreground="White" FontSize="22" FontWeight="SemiBold"/>
+                    <TextBlock Text="Explore a folder or drive. Analysis is read-only; links and inaccessible items are skipped."
+                               Foreground="#9CA3AF" TextWrapping="Wrap" Margin="0,6,0,12"/>
+                    <WrapPanel>
+                        <Button x:Name="ChooseDiskUsageFolderButton" Content="Choose Folder" Padding="16,9"
+                                Click="ChooseDiskUsageFolder_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="AnalyzeDiskUsageButton" Content="Analyze" Padding="16,9" IsEnabled="False"
+                                Click="AnalyzeDiskUsage_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="CancelDiskUsageButton" Content="Cancel" Padding="16,9" Visibility="Collapsed"
+                                Click="CancelDiskUsage_Click"/>
+                    </WrapPanel>
+                    <TextBlock x:Name="DiskUsagePathText" Text="No folder selected" Foreground="#CBD5E1"
+                               TextWrapping="Wrap" Margin="0,12,0,8"/>
+                    <TextBlock Text="Total analyzed size" Foreground="#9CA3AF"/>
+                    <TextBlock x:Name="DiskUsageTotalText" Text="Not analyzed" Foreground="White"
+                               FontSize="26" FontWeight="SemiBold" Margin="0,4,0,4"/>
+                    <TextBlock Text="Logical file sizes; allocated disk space may differ. Skipped folders count as one item."
+                               Foreground="#9CA3AF" FontSize="11" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="DiskUsageStatusText" Text="Choose a folder or drive to begin."
+                               Foreground="#9CA3AF" TextWrapping="Wrap" Margin="0,8,0,8"/>
+                    <ProgressBar x:Name="DiskUsageProgressBar" IsIndeterminate="True" Height="4"
+                                 Visibility="Collapsed" Margin="0,0,0,10"/>
+                    <TextBlock Text="Folders · largest first" Foreground="White" FontSize="16" Margin="0,8,0,8"/>
+                    <TreeView x:Name="DiskUsageTree" Height="320" Background="#111827" Foreground="#CBD5E1"
+                              BorderBrush="#374151" ScrollViewer.CanContentScroll="True"
+                              VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <TreeView.Resources>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="Foreground" Value="#CBD5E1"/>
+                                <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True"/>
+                                <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling"/>
+                            </Style>
+                            <HierarchicalDataTemplate DataType="{x:Type models:StorageTreeNode}" ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Margin="2,4" ToolTip="{Binding Path}">
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" MaxWidth="270" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding SizeBytes, StringFormat={}{0:N0} bytes}" Margin="12,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding SkippedItems, StringFormat={}Skipped: {0:N0}}" Foreground="#9CA3AF"
+                                               VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <Button Content="Open Folder" Tag="{Binding}" Click="OpenDiskUsageFolder_Click" Padding="8,3"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.Resources>
+                    </TreeView>
+                    <TextBlock Text="Largest files · top 100" Foreground="White" FontSize="16" Margin="0,18,0,8"/>
+                    <ListBox x:Name="LargestFilesList" Height="260" Background="#111827" Foreground="#CBD5E1"
+                             BorderBrush="#374151" ScrollViewer.CanContentScroll="True"
+                             VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"
+                             HorizontalContentAlignment="Stretch">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:LargeFileInfo}">
+                                <DockPanel Margin="4,6" ToolTip="{Binding Path}">
+                                    <Button DockPanel.Dock="Right" Content="Open Folder" Tag="{Binding}" Click="OpenDiskUsageFolder_Click"
+                                            Padding="8,3" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding SizeBytes, StringFormat={}{0:N0} bytes}"
+                                               VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Path}" Foreground="#9CA3AF" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
 
         </Grid>
 

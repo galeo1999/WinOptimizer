@@ -108,7 +108,7 @@ public partial class StorageView : UserControl
 locations
     .Where(
         item =>
-            item.IsCleanupCandidate
+            CanClean(item)
     )
     .Sum(
         item =>
@@ -147,6 +147,10 @@ locations
                 );
         }
     }
+
+    private static bool CanClean(StorageLocationInfo location) =>
+        location.IsCleanupCandidate && location.Type is
+            StorageLocationType.UserTemp or StorageLocationType.WindowsTemp or StorageLocationType.RecycleBin;
 
     private Border CreateStorageCard(
         StorageLocationInfo location)
@@ -239,7 +243,7 @@ locations
                     HorizontalAlignment.Right
             }
         );
-        if (location.IsCleanupCandidate)
+        if (CanClean(location))
         {
             Button cleanButton =
                 new Button
@@ -364,7 +368,7 @@ locations
             )
     };
 
-        if (location.IsCleanupCandidate)
+        if (CanClean(location))
         {
             cleanupStatusText.Text =
                 "Cleanup candidate";
@@ -540,7 +544,8 @@ locations
     RoutedEventArgs e)
     {
         if (sender is not Button button ||
-            button.Tag is not StorageLocationInfo location)
+            button.Tag is not StorageLocationInfo location ||
+            !CanClean(location) || !StorageResultsPanel.IsEnabled)
         {
             return;
         }
@@ -561,7 +566,8 @@ locations
                 "Continue?",
                 "Confirm storage cleanup",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Warning
+                MessageBoxImage.Warning,
+                MessageBoxResult.No
             );
 
         if (confirmation !=
@@ -571,8 +577,7 @@ locations
         }
 
 
-        button.IsEnabled =
-            false;
+        StorageResultsPanel.IsEnabled = false;
 
         AnalyzeStorageButton.IsEnabled =
             false;
@@ -592,6 +597,7 @@ locations
 
             MessageBox.Show(
                 $"Cleanup completed.\n\n" +
+                (result.IsEstimate ? "Recycle Bin totals are estimates based on before/after measurements.\n\n" : "") +
                 $"Deleted: {FormatBytes(result.DeletedBytes)}\n" +
                 $"Files deleted: {result.DeletedFiles:N0}\n" +
                 $"Skipped: {result.SkippedFiles:N0}\n" +
@@ -602,7 +608,6 @@ locations
             );
 
 
-            await AnalyzeStorageAsync();
         }
         catch (Exception ex)
         {
@@ -618,8 +623,16 @@ locations
         }
         finally
         {
-            AnalyzeStorageButton.IsEnabled =
-                true;
+            try
+            {
+                // Refresh even after a partial cleanup or failure.
+                await AnalyzeStorageAsync();
+            }
+            finally
+            {
+                StorageResultsPanel.IsEnabled = true;
+                AnalyzeStorageButton.IsEnabled = true;
+            }
         }
     }
 
