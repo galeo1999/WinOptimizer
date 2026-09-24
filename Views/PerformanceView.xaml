@@ -528,15 +528,19 @@
                         <Button Content="Task Manager" Click="OpenMemoryTaskManager_Click" Margin="0,0,0,8"/>
                     </WrapPanel>
                     <TextBlock x:Name="BackgroundStatus" Text="Select Refresh Background to collect a read-only snapshot." Foreground="#9CA3AF" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <WrapPanel Margin="0,0,0,8">
+                        <RadioButton x:Name="BackgroundActivityTab" Content="Activity" IsChecked="True" GroupName="BackgroundDisplay" Style="{StaticResource PerformanceTabStyle}" Click="BackgroundDisplay_Click" Padding="12,5"/>
+                        <RadioButton x:Name="BackgroundOpportunitiesTab" Content="Opportunities" GroupName="BackgroundDisplay" Style="{StaticResource PerformanceTabStyle}" Click="BackgroundDisplay_Click" Padding="12,5"/>
+                    </WrapPanel>
                 </StackPanel>
-                <Border Grid.Row="1" Style="{StaticResource PerformanceCard}" Padding="12" Margin="0,0,0,10">
+                <Border x:Name="BackgroundSummaryCard" Grid.Row="1" Style="{StaticResource PerformanceCard}" Padding="12" Margin="0,0,0,10">
                     <UniformGrid x:Name="BackgroundSummary" Columns="3">
                         <StackPanel><TextBlock Text="Running services" Style="{StaticResource MemoryLabel}"/><TextBlock Text="{Binding RunningServices, FallbackValue=Not measured}" Style="{StaticResource MemoryValue}" Margin="0,4,0,0"/></StackPanel>
                         <StackPanel><TextBlock Text="Measured service host processes" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/><TextBlock Text="{Binding ServiceHostProcesses, FallbackValue=Not measured}" Style="{StaticResource MemoryValue}" Margin="0,4,0,0"/></StackPanel>
                         <StackPanel><TextBlock Text="Measured background / host working set" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/><TextBlock Text="{Binding MeasuredWorkingSetBytes, Converter={StaticResource MemoryBytes}, FallbackValue=Not measured}" Style="{StaticResource MemoryValue}" Margin="0,4,0,0"/></StackPanel>
                     </UniformGrid>
                 </Border>
-                <WrapPanel Grid.Row="2" Margin="0,0,0,8">
+                <WrapPanel x:Name="BackgroundOptions" Grid.Row="2" Margin="0,0,0,8">
                     <TextBlock Text="Show" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <ComboBox x:Name="BackgroundFilterBox" SelectedIndex="0" SelectionChanged="BackgroundView_Changed" Width="180" Margin="0,0,16,0">
                         <ComboBoxItem Content="All"/><ComboBoxItem Content="Running services"/><ComboBoxItem Content="Automatic services"/><ComboBoxItem Content="Manual services"/>
@@ -590,11 +594,73 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <Expander Grid.Row="4" Header="About these measurements and classifications" Foreground="#9CA3AF" Margin="0,8,0,0">
+                <Expander x:Name="BackgroundNotes" Grid.Row="4" Header="About these measurements and classifications" Foreground="#9CA3AF" Margin="0,8,0,0">
                     <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
                         <TextBlock TextWrapping="Wrap" Text="Each sampled PID contributes once, regardless of how many services share it. Host memory cannot be attributed exactly to individual services. Working sets may share physical pages across PIDs. Counts and totals describe the full snapshot, not the filtered list. A filter retains the complete shared host if any hosted service matches. Non-service processes without a detected main window are background candidates; this heuristic does not prove background activity, and unknown window states are included. Service/process samples are not atomic: processes can exit or PIDs can change during collection. Incomplete readings are excluded from memory totals. Publisher origin is Unknown; Microsoft/third-party filters are not offered without verified origin. CPU usage is not measured. Startup and background categories overlap; these totals must not be added to total RAM. System/cache memory is not directly attributable here; Windows can reclaim cached memory. Cancellation is checked between WMI results and process queries; an in-flight WMI request may delay cancellation."/>
                     </ScrollViewer>
                 </Expander>
+                <Grid x:Name="BackgroundAdvisorPanel" Grid.Row="1" Grid.RowSpan="4" Visibility="Collapsed">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Border Style="{StaticResource PerformanceCard}" Padding="12" Margin="0,0,0,8">
+                        <StackPanel>
+                            <TextBlock Text="Background Optimization Opportunities" Foreground="White" FontWeight="SemiBold" FontSize="18"/>
+                            <StackPanel x:Name="BackgroundAdvisorSummary">
+                                <WrapPanel Margin="0,4,0,2">
+                                    <TextBlock Text="Current memory used by reviewable background activity: " Style="{StaticResource MemoryLabel}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CurrentWorkingSetBytes, Converter={StaticResource MemoryBytes}, FallbackValue=Not measured}" Foreground="White" FontSize="16"/>
+                                </WrapPanel>
+                            </StackPanel>
+                            <TextBlock x:Name="BackgroundAdvisorStatus" Text="Refresh Background to collect a measurement." Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                        <TextBlock Text="Review" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="BackgroundAdvisorFilterBox" SelectedIndex="0" SelectionChanged="BackgroundAdvisorFilter_Changed" Width="230">
+                            <ComboBoxItem Content="All informational categories"/><ComboBoxItem Content="Running automatic services"/><ComboBoxItem Content="Startup-associated"/><ComboBoxItem Content="Background candidates"/><ComboBoxItem Content="Shared service hosts"/>
+                        </ComboBox>
+                        <TextBlock Text="Current measurement, not guaranteed savings." Foreground="#9CA3AF" Margin="12,3,0,0"/>
+                    </WrapPanel>
+                    <ListBox x:Name="BackgroundAdvisorRows" Grid.Row="2" Background="Transparent" Foreground="#CBD5E1" BorderThickness="0" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemTemplate><DataTemplate>
+                            <Border Style="{StaticResource PerformanceCard}" Padding="12" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding CurrentStatus, StringFormat={}Status: {0}}"/>
+                                    <TextBlock Text="{Binding StartupType, StringFormat={}Service startup: {0}}"/>
+                                    <WrapPanel Margin="0,4,0,4">
+                                        <TextBlock Text="Working Set: "/><TextBlock Text="{Binding WorkingSetBytes, Converter={StaticResource MemoryBytes}}" Margin="0,0,12,0"/>
+                                        <TextBlock Text="Private: "/><TextBlock Text="{Binding PrivateMemoryBytes, Converter={StaticResource MemoryBytes}}" Margin="0,0,12,0"/>
+                                        <TextBlock Text="{Binding ProcessId, StringFormat={}PID: {0}, TargetNullValue=PID unavailable}"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="{Binding Reason}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding StartupAssociation}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    <TextBlock Text="{Binding AdminRequirement}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="Origin: Unknown · Informational only" Style="{StaticResource MemoryLabel}"/>
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <Button Content="Open Location" Tag="{Binding Activity.Process}" IsEnabled="{Binding CanOpenLocation}" Click="OpenProcessLocation_Click" Padding="8,5" Margin="0,0,8,4"/>
+                                        <Button Content="Copy PID" Tag="{Binding Activity.Process}" Click="CopyMemoryPid_Click" Padding="8,5" Margin="0,0,8,4">
+                                            <Button.Style><Style TargetType="Button" BasedOn="{StaticResource PerformanceButtonStyle}"><Style.Triggers><DataTrigger Binding="{Binding ProcessId}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Button.Style>
+                                        </Button>
+                                        <Button Content="View Startup" Tag="{Binding}" IsEnabled="{Binding CanManageStartup}" Click="NavigateBackgroundStartup_Click" Padding="8,5" Margin="0,0,8,4"/>
+                                    </WrapPanel>
+                                    <ItemsControl ItemsSource="{Binding Activity.Services}">
+                                        <ItemsControl.ItemTemplate><DataTemplate>
+                                            <WrapPanel Margin="0,4,0,0">
+                                                <TextBlock Text="{Binding Details}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,8,4"/>
+                                                <Button Content="Copy service name" Tag="{Binding}" Click="CopyServiceName_Click" Padding="8,5"/>
+                                            </WrapPanel>
+                                        </DataTemplate></ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate></ListBox.ItemTemplate>
+                    </ListBox>
+                    <Expander Grid.Row="3" Header="How to interpret these opportunities" Foreground="#9CA3AF" Margin="0,8,0,0">
+                        <ScrollViewer MaxHeight="110" VerticalScrollBarVisibility="Auto">
+                            <TextBlock TextWrapping="Wrap" Text="Running services are not automatically unnecessary. WinOptimizer shows measured resource usage and configuration so you can decide what to review. All entries, including core Windows components, are informational only; no disabling recommendation is made. Shared service hosts cannot be attributed exactly to individual services. The total counts each sampled reviewable PID once across all categories, independent of the selected filter. Missing readings are excluded; no-association rows and services without sampled processes are excluded. Different process working sets can still share physical pages. This is a timestamped current measurement, not RAM that will be saved. Startup and background categories overlap. Background candidates use the existing main-window heuristic; unknown publisher origin is never treated as third-party. Startup navigation requires one full executable-path match; similar names and ambiguous matches are not used. Cached memory is reclaimable by Windows, not automatically wasted."/>
+                        </ScrollViewer>
+                    </Expander>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

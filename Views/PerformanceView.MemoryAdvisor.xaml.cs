@@ -37,6 +37,7 @@ public partial class PerformanceView
         ApplyMemoryAdvisorOptions();
         RebuildMemoryContributors();
         UpdatePerformanceOverview();
+        RebuildBackgroundAdvisor();
     }
 
     private void MemoryAdvisorOptions_Changed(object sender, SelectionChangedEventArgs e) =>

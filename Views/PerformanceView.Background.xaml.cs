@@ -28,6 +28,7 @@ public partial class PerformanceView
             _backgroundResult = result;
             BackgroundSummary.DataContext = result;
             ApplyBackgroundView();
+            RebuildBackgroundAdvisor();
             BackgroundStatus.Text = $"Measured {result.CapturedAt:G} · {result.UnavailableHosts} hosts without memory readings. {result.Warning}";
         }
         catch (OperationCanceledException)
