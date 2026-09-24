@@ -12,24 +12,8 @@ public partial class PerformanceView
     private IReadOnlyList<StartupItem> _memoryStartupItems = [];
     private CancellationTokenSource? _memoryCancellation;
 
-    private async void RefreshMemory_Click(object sender, RoutedEventArgs e)
-    {
-        if (_advisorRefreshInProgress || _memoryCancellation != null)
-            return;
-        _advisorRefreshInProgress = true;
-        RefreshMemoryButton.IsEnabled = false;
-        try
-        {
-            await LoadStartupApplicationsAsync();
-            if (IsLoaded)
-                await RefreshMemoryAsync();
-        }
-        finally
-        {
-            _advisorRefreshInProgress = false;
-            RefreshMemoryButton.IsEnabled = true;
-        }
-    }
+    private async void RefreshMemory_Click(object sender, RoutedEventArgs e) =>
+        await RefreshMemoryAsync();
 
     private async Task RefreshMemoryAsync()
     {
@@ -73,8 +57,11 @@ public partial class PerformanceView
         }
     }
 
-    private void PerformanceMemory_Unloaded(object sender, RoutedEventArgs e) =>
-        _memoryCancellation?.Cancel();
+    private void PerformanceMemory_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (ReferenceEquals(e.OriginalSource, this))
+            _memoryCancellation?.Cancel();
+    }
 }
 
 public sealed class MemoryBytesConverter : IValueConverter

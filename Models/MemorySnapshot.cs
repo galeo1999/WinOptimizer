@@ -2,6 +2,9 @@ namespace WinOptimizer.Models;
 
 public class MemorySnapshot
 {
+    // WinOptimizer presentation guidance, not a Windows-defined critical boundary.
+    public const double CommitWarningThresholdPercent = 90.0;
+
     public ulong TotalBytes { get; set; }
 
     public ulong AvailableBytes { get; set; }
@@ -25,13 +28,13 @@ public class MemorySnapshot
         ? UsedBytes / (double)TotalBytes * 100 : null;
     public double? CommitUsagePercentage => CommitUsageBytes.HasValue && CommitLimitBytes is > 0
         ? CommitUsageBytes.Value / (double)CommitLimitBytes.Value * 100 : null;
-    public bool IsCommitNearLimit => CommitUsagePercentage is >= 90;
+    public bool IsCommitNearLimit => CommitUsagePercentage is >= CommitWarningThresholdPercent;
     public string CommitPressureText => CommitUsagePercentage switch
     {
         null => "Commit percentage unavailable (usage or a nonzero limit was not reported).",
         >= 100 => "Commit usage is at or above the reported commit limit.",
-        >= 90 => "Commit usage is near the limit (90% or more).",
-        _ => "Commit usage is below the near-limit threshold (90%)."
+        >= CommitWarningThresholdPercent => $"WinOptimizer warning: Commit usage is at or above the {CommitWarningThresholdPercent:0}% warning threshold.",
+        _ => $"Commit usage is below WinOptimizer's {CommitWarningThresholdPercent:0}% warning threshold."
     };
 
     public double TotalGigabytes =>
