@@ -10,6 +10,7 @@ public class ProcessMemoryInfo
     public ulong? PagedMemoryBytes { get; set; }
     public string? ExecutablePath { get; set; }
     // Indicates memory counters were read; the executable path may still be unavailable.
+    public bool CanOpenLocation => !string.IsNullOrWhiteSpace(ExecutablePath);
     public bool IsAccessible { get; set; }
     public string StartupAssociation { get; set; } = "No confirmed match";
     public string AccessStatus => IsAccessible ? "Available" : "Unavailable / exited";

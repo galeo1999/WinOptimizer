@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
@@ -57,7 +56,7 @@ public sealed class MemoryAnalyzer
             snapshot.PageFileUsedBytes = pageFileUsed;
         }
 
-        var associations = BuildStartupAssociations(startup);
+        var associations = StartupProcessMatcher.CreateIndex(startup);
         var results = new List<ProcessMemoryInfo>();
         Process[] processes = Process.GetProcesses();
         try
@@ -89,8 +88,8 @@ public sealed class MemoryAnalyzer
                     if (QueryFullProcessImageName(handle, 0, path, ref capacity))
                     {
                         item.ExecutablePath = path.ToString();
-                        if (associations.TryGetValue(item.ExecutablePath, out string? association))
-                            item.StartupAssociation = association;
+                        item.StartupAssociation = StartupProcessMatcher.Describe(
+                            StartupProcessMatcher.FindMatches(item.ExecutablePath, associations));
                     }
                 }
                 results.Add(item);
@@ -107,45 +106,6 @@ public sealed class MemoryAnalyzer
             .OrderByDescending(item => item.WorkingSetBytes)
             .ThenBy(item => item.ProcessName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.ProcessId).ToArray(), DateTimeOffset.Now);
-    }
-
-    private static Dictionary<string, string> BuildStartupAssociations(IEnumerable<StartupItem> items)
-    {
-        var matches = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (StartupItem item in items)
-        {
-            // Shortcuts and packaged task relative paths need separate resolution; do not guess.
-            if (item.SourceType == StartupSourceType.PackagedStartupTask)
-                continue;
-            string command = Environment.ExpandEnvironmentVariables(item.Command).Trim();
-            string executable;
-            if (command.StartsWith('"'))
-            {
-                int closingQuote = command.IndexOf('"', 1);
-                if (closingQuote < 0 ||
-                    (closingQuote + 1 < command.Length && !char.IsWhiteSpace(command[closingQuote + 1])))
-                    continue;
-                executable = command[1..closingQuote];
-            }
-            else
-            {
-                // An unquoted command with spaces is ambiguous; match only its first token.
-                int end = command.IndexOfAny([' ', '\t', '\r', '\n']);
-                executable = end < 0 ? command : command[..end];
-            }
-            if (!Path.IsPathFullyQualified(executable) ||
-                !executable.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                continue;
-            try
-            {
-                executable = Path.GetFullPath(executable);
-                string label = $"{item.Name} ({item.State})";
-                matches[executable] = matches.TryGetValue(executable, out string? existing)
-                    ? $"{existing}; {label}" : label;
-            }
-            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or IOException) { }
-        }
-        return matches;
     }
 
     private static bool IsProcessUnavailable(Exception exception) =>

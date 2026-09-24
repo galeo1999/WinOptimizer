@@ -49,6 +49,9 @@ public partial class PerformanceView : UserControl
     {
         try
         {
+            _memoryStartupScanAvailable = false;
+            _memoryStartupItems = [];
+            RebuildMemoryAdvisor();
             StartupAppsPanel.Children.Clear();
 
             StartupCountText.Text =
@@ -63,6 +66,8 @@ public partial class PerformanceView : UserControl
                 .ToList();
 
             _memoryStartupItems = items.ToArray();
+            _memoryStartupScanAvailable = true;
+            RebuildMemoryAdvisor();
 
             StartupCountText.Text =
                 $"{items.Count} startup entries detected";
@@ -108,6 +113,7 @@ public partial class PerformanceView : UserControl
     Border card =
         new Border
         {
+            Tag = item,
             Background =
                 new SolidColorBrush(
                     Color.FromRgb(31, 41, 55)
