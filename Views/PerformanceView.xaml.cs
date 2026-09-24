@@ -40,6 +40,8 @@ public partial class PerformanceView : UserControl
         RoutedEventArgs e)
     {
         await LoadStartupApplicationsAsync();
+        if (IsLoaded)
+            await RefreshMemoryAsync();
     }
 
     private async Task
@@ -59,6 +61,8 @@ public partial class PerformanceView : UserControl
                     item => item.Name
                 )
                 .ToList();
+
+            _memoryStartupItems = items.ToArray();
 
             StartupCountText.Text =
                 $"{items.Count} startup entries detected";
