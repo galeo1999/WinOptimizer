@@ -4,7 +4,7 @@ using WinOptimizer.Services;
 
 namespace WinOptimizer.Views;
 
-public enum PerformanceSection { Overview, Memory, Processes, Startup }
+public enum PerformanceSection { Overview, Memory, Processes, Startup, Background }
 
 public partial class PerformanceView
 {
@@ -26,6 +26,8 @@ public partial class PerformanceView
         MemorySection.Visibility = section == PerformanceSection.Memory ? Visibility.Visible : Visibility.Collapsed;
         ProcessesSection.Visibility = section == PerformanceSection.Processes ? Visibility.Visible : Visibility.Collapsed;
         StartupSection.Visibility = section == PerformanceSection.Startup ? Visibility.Visible : Visibility.Collapsed;
+        BackgroundSection.Visibility = section == PerformanceSection.Background ? Visibility.Visible : Visibility.Collapsed;
+        BackgroundTab.IsChecked = section == PerformanceSection.Background;
         OverviewTab.IsChecked = section == PerformanceSection.Overview;
         MemoryTab.IsChecked = section == PerformanceSection.Memory;
         ProcessesTab.IsChecked = section == PerformanceSection.Processes;

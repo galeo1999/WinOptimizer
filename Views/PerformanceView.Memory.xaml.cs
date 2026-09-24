@@ -60,7 +60,10 @@ public partial class PerformanceView
     private void PerformanceMemory_Unloaded(object sender, RoutedEventArgs e)
     {
         if (ReferenceEquals(e.OriginalSource, this))
+        {
             _memoryCancellation?.Cancel();
+            _backgroundCancellation?.Cancel();
+        }
     }
 }
 

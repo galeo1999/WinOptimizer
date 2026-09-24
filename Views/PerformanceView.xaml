@@ -82,13 +82,14 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0">
             <TextBlock Text="Performance" Foreground="White" FontSize="28" FontWeight="Bold" />
-            <TextBlock Text="Overview, memory, processes and startup" Foreground="#9CA3AF" Margin="0,4,0,0" />
+            <TextBlock Text="Overview, memory, processes, startup and background" Foreground="#9CA3AF" Margin="0,4,0,0" />
         </StackPanel>
         <WrapPanel Margin="0,18,0,16" Grid.Row="1">
             <RadioButton x:Name="OverviewTab" Content="Overview" GroupName="PerformanceSections" Style="{StaticResource PerformanceTabStyle}" Tag="{x:Static views:PerformanceSection.Overview}" Click="NavigatePerformance_Click" />
             <RadioButton x:Name="MemoryTab" Content="Memory" GroupName="PerformanceSections" Style="{StaticResource PerformanceTabStyle}" Tag="{x:Static views:PerformanceSection.Memory}" Click="NavigatePerformance_Click" />
             <RadioButton x:Name="ProcessesTab" Content="Processes" GroupName="PerformanceSections" Style="{StaticResource PerformanceTabStyle}" Tag="{x:Static views:PerformanceSection.Processes}" Click="NavigatePerformance_Click" />
             <RadioButton x:Name="StartupTab" Content="Startup" GroupName="PerformanceSections" Style="{StaticResource PerformanceTabStyle}" Tag="{x:Static views:PerformanceSection.Startup}" Click="NavigatePerformance_Click" />
+            <RadioButton x:Name="BackgroundTab" Content="Background" GroupName="PerformanceSections" Style="{StaticResource PerformanceTabStyle}" Tag="{x:Static views:PerformanceSection.Background}" Click="NavigatePerformance_Click" />
         </WrapPanel>
         <Grid Grid.Row="2">
             <ScrollViewer x:Name="OverviewSection" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -512,6 +513,88 @@
                         </Expander>
                     </Grid>
                 </Grid>
+            </Grid>
+            <Grid x:Name="BackgroundSection" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Text="Background Activity" FontSize="20" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,16,8"/>
+                        <Button x:Name="RefreshBackgroundButton" Content="Refresh Background" Click="RefreshBackground_Click" Margin="0,0,8,8"/>
+                        <Button x:Name="CancelBackgroundButton" Content="Cancel" IsEnabled="False" Click="CancelBackground_Click" Margin="0,0,8,8"/>
+                        <Button Content="Windows Services" Click="OpenServicesConsole_Click" Margin="0,0,8,8"/>
+                        <Button Content="Task Manager" Click="OpenMemoryTaskManager_Click" Margin="0,0,0,8"/>
+                    </WrapPanel>
+                    <TextBlock x:Name="BackgroundStatus" Text="Select Refresh Background to collect a read-only snapshot." Foreground="#9CA3AF" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                </StackPanel>
+                <Border Grid.Row="1" Style="{StaticResource PerformanceCard}" Padding="12" Margin="0,0,0,10">
+                    <UniformGrid x:Name="BackgroundSummary" Columns="3">
+                        <StackPanel><TextBlock Text="Running services" Style="{StaticResource MemoryLabel}"/><TextBlock Text="{Binding RunningServices, FallbackValue=Not measured}" Style="{StaticResource MemoryValue}" Margin="0,4,0,0"/></StackPanel>
+                        <StackPanel><TextBlock Text="Measured service host processes" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/><TextBlock Text="{Binding ServiceHostProcesses, FallbackValue=Not measured}" Style="{StaticResource MemoryValue}" Margin="0,4,0,0"/></StackPanel>
+                        <StackPanel><TextBlock Text="Measured background / host working set" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/><TextBlock Text="{Binding MeasuredWorkingSetBytes, Converter={StaticResource MemoryBytes}, FallbackValue=Not measured}" Style="{StaticResource MemoryValue}" Margin="0,4,0,0"/></StackPanel>
+                    </UniformGrid>
+                </Border>
+                <WrapPanel Grid.Row="2" Margin="0,0,0,8">
+                    <TextBlock Text="Show" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="BackgroundFilterBox" SelectedIndex="0" SelectionChanged="BackgroundView_Changed" Width="180" Margin="0,0,16,0">
+                        <ComboBoxItem Content="All"/><ComboBoxItem Content="Running services"/><ComboBoxItem Content="Automatic services"/><ComboBoxItem Content="Manual services"/>
+                    </ComboBox>
+                    <TextBlock Text="Sort" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="BackgroundSortBox" SelectedIndex="0" SelectionChanged="BackgroundView_Changed" Width="180">
+                        <ComboBoxItem Content="Working Set"/><ComboBoxItem Content="Service/application name"/><ComboBoxItem Content="Startup type"/><ComboBoxItem Content="Process count"/>
+                    </ComboBox>
+                </WrapPanel>
+                <ListBox x:Name="BackgroundList" Grid.Row="3" Background="Transparent" Foreground="#CBD5E1" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource PerformanceCard}" Padding="12" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold" FontSize="16"/>
+                                    <WrapPanel Margin="0,4,0,4">
+                                        <TextBlock Text="{Binding Process.ProcessId, StringFormat={}PID: {0}, FallbackValue=No measured PID}" Margin="0,0,12,0"/>
+                                        <TextBlock Text="{Binding ProcessCount, StringFormat={}Processes: {0}}" Margin="0,0,12,0"/>
+                                        <TextBlock Text="Working Set: "/><TextBlock Text="{Binding WorkingSetBytes, Converter={StaticResource MemoryBytes}}" Margin="0,0,12,0"/>
+                                        <TextBlock Text="Private: "/><TextBlock Text="{Binding PrivateMemoryBytes, Converter={StaticResource MemoryBytes}}"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="{Binding Process.ProcessName, StringFormat={}Host/process: {0}, FallbackValue=Host unavailable}" Style="{StaticResource MemoryLabel}"/>
+                                    <TextBlock Text="{Binding ServiceState, StringFormat={}State: {0}}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding StartupType, StringFormat={}Service startup: {0}}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Association}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding AccessStatus}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Process.StartupAssociation, StringFormat={}Startup association: {0}}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/>
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <Button Content="Open executable location" Tag="{Binding Process}" IsEnabled="{Binding Process.CanOpenLocation, FallbackValue=False}" Click="OpenProcessLocation_Click" Padding="8,5" Margin="0,0,8,0"/>
+                                        <Button Content="Copy PID" Tag="{Binding Process}" Click="CopyMemoryPid_Click" Padding="8,5">
+                                            <Button.Style><Style TargetType="Button" BasedOn="{StaticResource PerformanceButtonStyle}"><Style.Triggers><DataTrigger Binding="{Binding Process}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Button.Style>
+                                        </Button>
+                                    </WrapPanel>
+                                    <Expander Header="{Binding Services.Count, StringFormat={}Service details ({0})}" Foreground="#CBD5E1" Margin="0,8,0,0">
+                                        <ItemsControl ItemsSource="{Binding Services}">
+                                            <ItemsControl.ItemTemplate><DataTemplate>
+                                                <StackPanel Margin="0,8,0,4">
+                                                    <TextBlock Text="{Binding DisplayName}" Foreground="White" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding AccessStatus}" Style="{StaticResource MemoryLabel}"/>
+                                                    <TextBlock Text="{Binding Details}" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding ProcessId, StringFormat={}Reported host PID: {0}, TargetNullValue=No reported host PID}" Style="{StaticResource MemoryLabel}"/>
+                                                    <TextBlock Text="{Binding Description, TargetNullValue=Description unavailable}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding ConfiguredCommand, TargetNullValue=Configured command unavailable}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/>
+                                                    <Button Content="Copy service name" Tag="{Binding}" Click="CopyServiceName_Click" HorizontalAlignment="Left" Padding="8,5" Margin="0,5,0,0"/>
+                                                </StackPanel>
+                                            </DataTemplate></ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Expander Grid.Row="4" Header="About these measurements and classifications" Foreground="#9CA3AF" Margin="0,8,0,0">
+                    <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
+                        <TextBlock TextWrapping="Wrap" Text="Each sampled PID contributes once, regardless of how many services share it. Host memory cannot be attributed exactly to individual services. Working sets may share physical pages across PIDs. Counts and totals describe the full snapshot, not the filtered list. A filter retains the complete shared host if any hosted service matches. Non-service processes without a detected main window are background candidates; this heuristic does not prove background activity, and unknown window states are included. Service/process samples are not atomic: processes can exit or PIDs can change during collection. Incomplete readings are excluded from memory totals. Publisher origin is Unknown; Microsoft/third-party filters are not offered without verified origin. CPU usage is not measured. Startup and background categories overlap; these totals must not be added to total RAM. System/cache memory is not directly attributable here; Windows can reclaim cached memory. Cancellation is checked between WMI results and process queries; an in-flight WMI request may delay cancellation."/>
+                    </ScrollViewer>
+                </Expander>
             </Grid>
         </Grid>
     </Grid>
