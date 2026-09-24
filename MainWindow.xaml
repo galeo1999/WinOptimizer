@@ -1,0 +1,203 @@
+﻿<Window x:Class="WinOptimizer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinOptimizer"
+        Height="750"
+        Width="1200"
+        MinHeight="600"
+        MinWidth="950"
+        WindowStartupLocation="CenterScreen"
+        Background="#111827">
+
+    <Window.Resources>
+
+        <Style x:Key="SidebarButtonStyle"
+               TargetType="Button">
+
+            <Setter Property="Background"
+                    Value="Transparent"/>
+
+            <Setter Property="Foreground"
+                    Value="#CBD5E1"/>
+
+            <Setter Property="BorderBrush"
+                    Value="Transparent"/>
+
+            <Setter Property="BorderThickness"
+                    Value="3,0,0,0"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+
+            <Setter Property="Padding"
+                    Value="18,12"/>
+
+            <Setter Property="Margin"
+                    Value="8,3"/>
+
+            <Setter Property="FontSize"
+                    Value="15"/>
+
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"
+                                Margin="{TemplateBinding Padding}"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+
+                                <Setter TargetName="ButtonBorder"
+                                        Property="Background"
+                                        Value="#1E293B"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="Tag"
+                         Value="Active">
+
+                    <Setter Property="Background"
+                            Value="#1E293B"/>
+
+                    <Setter Property="Foreground"
+                            Value="White"/>
+
+                    <Setter Property="BorderBrush"
+                            Value="#3B82F6"/>
+
+                    <Setter Property="FontWeight"
+                            Value="SemiBold"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="210"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0"
+                Background="#0F172A"
+                BorderBrush="#1F2937"
+                BorderThickness="0,0,1,0">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Logo / Title -->
+                <StackPanel Grid.Row="0"
+                            Margin="20,25,20,25">
+
+                    <TextBlock Text="WinOptimizer"
+                               Foreground="White"
+                               FontSize="23"
+                               FontWeight="Bold"/>
+
+                    <TextBlock Text="Windows 11 Toolkit"
+                               Foreground="#64748B"
+                               FontSize="12"
+                               Margin="0,4,0,0"/>
+
+                </StackPanel>
+
+                <!-- Navigation -->
+                <StackPanel Grid.Row="1">
+
+                    <Button x:Name="DashboardButton"
+                            Content="Dashboard"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Click="DashboardButton_Click"/>
+
+                    <Button x:Name="PrivacyButton"
+                            Content="Privacy"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Click="PrivacyButton_Click"/>
+
+                    <Button x:Name="PerformanceButton"
+                            Content="Performance"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Click="PerformanceButton_Click"/>
+
+                    <Button x:Name="StorageButton"
+                            Content="Storage"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Click="StorageButton_Click"/>
+
+                    <Button x:Name="DebloatButton"
+                            Content="Debloat"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Click="DebloatButton_Click"/>
+
+                    <Button x:Name="RestoreButton"
+                            Content="Restore"
+                            Style="{StaticResource SidebarButtonStyle}"
+                            Click="RestoreButton_Click"/>
+
+                </StackPanel>
+
+                <!-- Footer -->
+                <StackPanel Grid.Row="2"
+                            Margin="20">
+
+                    <TextBlock x:Name="PrivilegeStatusText"
+                               Text="Checking privileges..."
+                               Foreground="#64748B"
+                               FontSize="12"
+                               Margin="0,0,0,6"/>
+
+                    <TextBlock Text="v0.1"
+                               Foreground="#64748B"
+                               FontSize="12"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+        <!-- Page Content -->
+        <ContentControl x:Name="MainContent"
+                        Grid.Column="1"/>
+
+    </Grid>
+
+</Window>

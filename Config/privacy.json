@@ -1,0 +1,95 @@
+[
+  {
+    "id": "privacy.advertising-id",
+    "name": "Advertising ID",
+    "description": "Disables the Windows advertising identifier used for personalized advertising.",
+    "category": "Privacy",
+    "risk": "Low",
+    "requiresAdmin": false,
+    "requiresRestart": false,
+    "registryChanges": [
+      {
+        "hive": "CurrentUser",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+        "name": "Enabled",
+        "value": 0,
+        "type": "DWord"
+      }
+    ]
+  },
+  {
+    "id": "privacy.tailored-experiences",
+    "name": "Tailored Experiences",
+    "description": "Disables personalized tips, recommendations and offers based on diagnostic data.",
+    "category": "Privacy",
+    "risk": "Low",
+    "requiresAdmin": false,
+    "requiresRestart": false,
+    "registryChanges": [
+      {
+        "hive": "CurrentUser",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Privacy",
+        "name": "TailoredExperiencesWithDiagnosticDataEnabled",
+        "value": 0,
+        "type": "DWord"
+      }
+    ]
+  },
+  {
+    "id": "privacy.input-personalization",
+    "name": "Input Personalization",
+    "description": "Restricts implicit collection of typing and handwriting data used for personalization.",
+    "category": "Privacy",
+    "risk": "Low",
+    "requiresAdmin": false,
+    "requiresRestart": false,
+    "registryChanges": [
+      {
+        "hive": "CurrentUser",
+        "path": "Software\\Microsoft\\InputPersonalization",
+        "name": "RestrictImplicitTextCollection",
+        "value": 1,
+        "type": "DWord"
+      },
+      {
+        "hive": "CurrentUser",
+        "path": "Software\\Microsoft\\InputPersonalization",
+        "name": "RestrictImplicitInkCollection",
+        "value": 1,
+        "type": "DWord"
+      }
+    ]
+  },
+  {
+    "id": "privacy.activity-history",
+    "name": "Activity History",
+    "description": "Disables Windows activity feed publishing and activity uploads.",
+    "category": "Privacy",
+    "risk": "Low",
+    "requiresAdmin": true,
+    "requiresRestart": false,
+    "registryChanges": [
+      {
+        "hive": "LocalMachine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "EnableActivityFeed",
+        "value": 0,
+        "type": "DWord"
+      },
+      {
+        "hive": "LocalMachine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "PublishUserActivities",
+        "value": 0,
+        "type": "DWord"
+      },
+      {
+        "hive": "LocalMachine",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "UploadUserActivities",
+        "value": 0,
+        "type": "DWord"
+      }
+    ]
+  }
+]
