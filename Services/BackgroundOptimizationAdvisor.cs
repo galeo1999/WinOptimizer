@@ -50,7 +50,8 @@ public static class BackgroundOptimizationAdvisor
             }
             if (type == BackgroundRecommendationType.NoActionableAssociation)
                 reasons.Add("No actionable association: existing data does not support a more specific review category.");
-            rows.Add(new(activity, matches, type, string.Join(" ", reasons)));
+            rows.Add(new(activity, matches, type, string.Join(" ", reasons),
+                activity.Services.Count == 1 ? SupportedBackgroundActions.ForService(activity.Services[0]) : null));
         }
         var measuredRows = rows.Where(r => r.IncludedInMeasurement).ToArray();
         return new(rows, snapshot.CapturedAt,

@@ -14,13 +14,15 @@ public enum BackgroundRecommendationType
 
 public enum BackgroundAdvisorFilter { All, AutomaticServices, StartupAssociated, BackgroundCandidates, SharedHosts }
 
-// Every row is informational, including core Windows components. No disabling advice.
+// Resource categories remain informational. Only an explicit reviewed catalog action can change configuration.
 public sealed record BackgroundOptimizationRecommendation(
     BackgroundProcessInfo Activity,
     IReadOnlyList<StartupItem> StartupMatches,
     BackgroundRecommendationType RecommendationType,
-    string Reason)
+    string Reason,
+    SupportedBackgroundOptimization? SupportedAction = null)
 {
+    public bool CanReviewChange => SupportedAction != null;
     public string Name => Activity.Name;
     public string? ServiceName => Activity.Services.Count == 1 ? Activity.Services[0].ServiceName : null;
     public int? ProcessId => Activity.Process?.ProcessId;
@@ -35,9 +37,9 @@ public sealed record BackgroundOptimizationRecommendation(
     // Navigation only; the existing Startup UI decides which actions are supported.
     public bool CanManageStartup => StartupMatches.Count == 1;
     public StartupItem? StartupEntry => CanManageStartup ? StartupMatches[0] : null;
-    // Only the known startup entry's requirement; service-change permissions are not probed.
-    public bool? RequiresAdmin => StartupEntry?.RequiresAdmin;
-    public string AdminRequirement => RequiresAdmin switch
+    // Supported service changes require elevation; otherwise this describes the associated startup entry.
+    public bool? RequiresAdmin => SupportedAction != null ? true : StartupEntry?.RequiresAdmin;
+    public string AdminRequirement => SupportedAction != null ? "Review Change requires administrator approval." : RequiresAdmin switch
     {
         true => "Associated startup changes require administrator privileges.",
         false => "Associated startup changes do not require administrator privileges.",

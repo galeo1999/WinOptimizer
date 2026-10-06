@@ -15,6 +15,8 @@ protected override void OnStartup(
 {
     base.OnStartup(e);
 
+    if (TryHandleBackgroundCommand(e.Args)) return;
+
     bool openPrivacy = false;
     bool openPerformance = false;
 

@@ -55,4 +55,21 @@ public partial class PerformanceView
         ViewAdvisorStartup_Click(sender, e);
         StartupAppsPanel.Children.OfType<Border>().FirstOrDefault(card => ReferenceEquals(card.Tag, matches[0]))?.BringIntoView();
     }
+    private async void ReviewBackgroundChange_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: BackgroundOptimizationRecommendation { SupportedAction: { } action } }) return;
+        if (_backgroundCancellation != null)
+        {
+            BackgroundAdvisorStatus.Text = "Wait for the current background scan to finish before reviewing a change.";
+            return;
+        }
+        BackgroundSection.IsEnabled = false;
+        try
+        {
+            int result = await BackgroundServiceActionWorkflow.RunAsync(Window.GetWindow(this), action.Id, null);
+            if (result != 2 && IsLoaded) RefreshBackground_Click(sender, e);
+        }
+        finally { BackgroundSection.IsEnabled = true; }
+    }
+
 }

@@ -635,13 +635,18 @@
                                     <TextBlock Text="{Binding Reason}" TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding StartupAssociation}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                     <TextBlock Text="{Binding AdminRequirement}" Style="{StaticResource MemoryLabel}" TextWrapping="Wrap"/>
-                                    <TextBlock Text="Origin: Unknown · Informational only" Style="{StaticResource MemoryLabel}"/>
+                                    <TextBlock Text="Origin: Unknown · Host memory is not guaranteed savings" Style="{StaticResource MemoryLabel}"/>
+                                    <TextBlock Text="{Binding SupportedAction.Description}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    <TextBlock Text="{Binding SupportedAction.Consequence}" Foreground="#9CA3AF" TextWrapping="Wrap"/>
                                     <WrapPanel Margin="0,8,0,0">
                                         <Button Content="Open Location" Tag="{Binding Activity.Process}" IsEnabled="{Binding CanOpenLocation}" Click="OpenProcessLocation_Click" Padding="8,5" Margin="0,0,8,4"/>
                                         <Button Content="Copy PID" Tag="{Binding Activity.Process}" Click="CopyMemoryPid_Click" Padding="8,5" Margin="0,0,8,4">
                                             <Button.Style><Style TargetType="Button" BasedOn="{StaticResource PerformanceButtonStyle}"><Style.Triggers><DataTrigger Binding="{Binding ProcessId}" Value="{x:Null}"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></Button.Style>
                                         </Button>
                                         <Button Content="View Startup" Tag="{Binding}" IsEnabled="{Binding CanManageStartup}" Click="NavigateBackgroundStartup_Click" Padding="8,5" Margin="0,0,8,4"/>
+                                        <Button Content="Review Change" Tag="{Binding}" Click="ReviewBackgroundChange_Click" Padding="8,5" Margin="0,0,8,4">
+                                            <Button.Style><Style TargetType="Button" BasedOn="{StaticResource PerformanceButtonStyle}"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding CanReviewChange}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Button.Style>
+                                        </Button>
                                     </WrapPanel>
                                     <ItemsControl ItemsSource="{Binding Activity.Services}">
                                         <ItemsControl.ItemTemplate><DataTemplate>
@@ -657,7 +662,7 @@
                     </ListBox>
                     <Expander Grid.Row="3" Header="How to interpret these opportunities" Foreground="#9CA3AF" Margin="0,8,0,0">
                         <ScrollViewer MaxHeight="110" VerticalScrollBarVisibility="Auto">
-                            <TextBlock TextWrapping="Wrap" Text="Running services are not automatically unnecessary. WinOptimizer shows measured resource usage and configuration so you can decide what to review. All entries, including core Windows components, are informational only; no disabling recommendation is made. Shared service hosts cannot be attributed exactly to individual services. The total counts each sampled reviewable PID once across all categories, independent of the selected filter. Missing readings are excluded; no-association rows and services without sampled processes are excluded. Different process working sets can still share physical pages. This is a timestamped current measurement, not RAM that will be saved. Startup and background categories overlap. Background candidates use the existing main-window heuristic; unknown publisher origin is never treated as third-party. Startup navigation requires one full executable-path match; similar names and ambiguous matches are not used. Cached memory is reclaimable by Windows, not automatically wasted."/>
+                            <TextBlock TextWrapping="Wrap" Text="Running services are not automatically unnecessary. WinOptimizer shows measured resource usage and configuration so you can decide what to review. Resource categories are informational. Only Windows Search Automatic → Manual has a reviewed configuration action; all other services remain informational. Review Change shows consequences and rechecks live configuration before confirmation and UAC. No service is stopped or disabled. Shared service hosts cannot be attributed exactly to individual services. The total counts each sampled reviewable PID once across all categories, independent of the selected filter. Missing readings are excluded; no-association rows and services without sampled processes are excluded. Different process working sets can still share physical pages. This is a timestamped current measurement, not RAM that will be saved. Startup and background categories overlap. Background candidates use the existing main-window heuristic; unknown publisher origin is never treated as third-party. Startup navigation requires one full executable-path match; similar names and ambiguous matches are not used. Cached memory is reclaimable by Windows, not automatically wasted."/>
                         </ScrollViewer>
                     </Expander>
                 </Grid>
