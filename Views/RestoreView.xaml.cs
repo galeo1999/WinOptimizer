@@ -40,6 +40,8 @@ public partial class RestoreView : UserControl
         LoadPrivacyHistory();
 
         LoadStartupHistory();
+
+        LoadBackgroundHistory();
     }
 
 

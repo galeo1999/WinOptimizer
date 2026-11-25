@@ -151,6 +151,20 @@ private static StorageLocationInfo AnalyzeDirectory(
 
             try
             {
+                if ((File.GetAttributes(currentDirectory) & FileAttributes.ReparsePoint) != 0)
+                {
+                    result.SkippedItems++;
+                    continue;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                result.SkippedItems++;
+                continue;
+            }
+
+            try
+            {
                 foreach (
                     string file
                     in Directory.EnumerateFiles(
@@ -163,6 +177,12 @@ private static StorageLocationInfo AnalyzeDirectory(
                     {
                         FileInfo info =
                             new FileInfo(file);
+
+                        if ((info.Attributes & FileAttributes.ReparsePoint) != 0)
+                        {
+                            result.SkippedItems++;
+                            continue;
+                        }
 
                         result.SizeBytes +=
                             info.Length;

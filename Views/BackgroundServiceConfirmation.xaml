@@ -1,0 +1,24 @@
+<Window x:Class="WinOptimizer.Views.BackgroundServiceConfirmation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Review background change" Width="560" SizeToContent="Height" MaxHeight="740"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Background="#111827" Foreground="#CBD5E1">
+    <Grid Margin="24">
+        <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="580">
+            <StackPanel>
+                <TextBlock x:Name="ActionName" FontSize="22" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock x:Name="ChangeDetails" Margin="0,16,0,0" TextWrapping="Wrap"/>
+                <TextBlock Text="Effect" Foreground="White" FontWeight="SemiBold" Margin="0,16,0,6"/>
+                <TextBlock x:Name="EffectText" TextWrapping="Wrap"/>
+                <TextBlock Text="Possible consequence" Foreground="White" FontWeight="SemiBold" Margin="0,16,0,6"/>
+                <TextBlock x:Name="Consequence" TextWrapping="Wrap"/>
+                <TextBlock Text="Administrator approval is required. WinOptimizer will verify the result. No running service will be stopped or started. Current host memory is not guaranteed savings." Foreground="#9CA3AF" TextWrapping="Wrap" Margin="0,16,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Cancel" IsCancel="True" IsDefault="True" Padding="18,8" Margin="0,0,12,0"/>
+            <Button x:Name="ApplyButton" Content="Apply" Click="Apply_Click" Padding="18,8" Background="#2563EB" Foreground="White"/>
+        </StackPanel>
+    </Grid>
+</Window>

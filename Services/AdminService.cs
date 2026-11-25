@@ -5,7 +5,7 @@ using System.Security.Principal;
 
 namespace WinOptimizer.Services;
 
-public static class AdminService
+public static partial class AdminService
 {
     public static bool IsRunningAsAdministrator()
     {
